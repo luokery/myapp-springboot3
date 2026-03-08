@@ -1,0 +1,10 @@
+[project]
+requires = ["java-17"]
+
+[dev]
+build = ["mvn", "clean", "compile", "-DskipTests"]
+run = ["mvn", "spring-boot:run", "-Dspring-boot.run.arguments=--server.port=5000"]
+
+[deploy]
+build = ["mvn", "clean", "package", "-DskipTests"]
+run = ["java", "-jar", "target/user-management-1.0.0.jar", "--server.port=5000"]
