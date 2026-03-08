@@ -18,13 +18,17 @@
     <description>User Management System with Spring Boot, MyBatis and MapStruct</description>
     
     <properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<java.version>17</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>17</java.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.release></maven.compiler.release>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <mybatis-spring-boot.version>3.0.3</mybatis-spring-boot.version>
         <druid.version>1.2.21</druid.version>
         <springdoc.version>2.3.0</springdoc.version>
+        <redisson.version>3.25.2</redisson.version>
     </properties>
     
     <dependencies>
@@ -64,10 +68,37 @@
             <version>${druid.version}</version>
         </dependency>
         
-		<!-- 引入aop支持 -->
+        <!-- 引入aop支持 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+        
+        <!-- Spring Cache -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-cache</artifactId>
+        </dependency>
+        
+        <!-- Redis - 当 Redis 可用时取消注释
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        -->
+        
+        <!-- Redisson 分布式锁 - 当 Redis 可用时取消注释
+        <dependency>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson-spring-boot-starter</artifactId>
+            <version>${redisson.version}</version>
+        </dependency>
+        -->
+        
+        <!-- Caffeine 本地缓存 -->
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
         </dependency>
         
         <!-- SpringDoc OpenAPI (Swagger) -->
@@ -138,7 +169,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
+                <version>3.12.1</version>
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>

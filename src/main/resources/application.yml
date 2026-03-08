@@ -94,6 +94,7 @@ logging:
     root: INFO
     com.example.usermanagement: DEBUG
     com.alibaba.druid: INFO
+    org.springframework.cache: DEBUG
   config: classpath:log4j2.xml
 
 # 文件上传配置
@@ -105,3 +106,46 @@ spring.servlet.multipart:
   enabled: true
   max-file-size: 10MB
   max-request-size: 20MB
+
+# Redis 配置 (当 Redis 可用时，取消 pom.xml 中 Redis 依赖的注释，并设置环境变量)
+# spring.data.redis:
+#   host: ${REDIS_HOST:localhost}
+#   port: ${REDIS_PORT:6379}
+#   password: ${REDIS_PASSWORD:}
+#   database: ${REDIS_DATABASE:0}
+#   timeout: 10000ms
+#   lettuce:
+#     pool:
+#       max-active: 20
+#       max-idle: 10
+#       min-idle: 5
+#       max-wait: 3000ms
+
+# Redisson 配置 (当 Redis 启用时生效)
+# spring.data.redis.redisson:
+#   config: |
+#     singleServerConfig:
+#       address: "redis://${REDIS_HOST:localhost}:${REDIS_PORT:6379}"
+#       password: "${REDIS_PASSWORD:}"
+#       database: ${REDIS_DATABASE:0}
+#       connectionPoolSize: 20
+#       connectionMinimumIdleSize: 5
+#       idleConnectionTimeout: 10000
+#       connectTimeout: 10000
+#       timeout: 3000
+#       retryAttempts: 3
+#       retryInterval: 1500
+#     threads: 4
+#     nettyThreads: 4
+#     codec: !<org.redisson.codec.JsonJacksonCodec> {}
+
+# Spring Cache 配置 - 使用 Caffeine 本地缓存
+spring.cache:
+  type: caffeine
+  cache-names: users, projects, statistics
+
+# Caffeine 本地缓存配置
+cache:
+  caffeine:
+    default-expire: 600
+    max-size: 1000
