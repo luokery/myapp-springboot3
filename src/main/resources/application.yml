@@ -28,25 +28,38 @@ spring:
         url-pattern: /druid/*
         login-username: admin
         login-password: admin123
-        reset-enable: false
+        reset-enable: true
       web-stat-filter:
         enabled: true
         url-pattern: /*
         exclusions: "*.js,*.gif,*.jpg,*.png,*.css,*.ico,/druid/*"
+      #config是为了数据库加密
+      filters: stat,wall,slf4j,log4j2,config
+      # spring监控 需要引入spring-boot-starter-aop切面支持
+      aop-patterns: com.example.usermanagement.mapper.*, com.example.usermanagement.service.*, com.example.usermanagement.controller.*
       filter:
         stat:
           enabled: true
           log-slow-sql: true
-          slow-sql-millis: 2000
+          merge-sql: true
+          slow-sql-millis: 500
         wall:
           enabled: true
           config:
             drop-table-allow: false
-  
+            delete-allow: true
+            multi-statement-allow: false
+        slf4j:
+          enabled: false
+          statement-create-after-log-enabled: false
+          statement-close-after-log-enabled: false
+          result-set-open-after-log-enabled: false
+          result-set-close-after-log-enabled: false
+
   h2:
     console:
       enabled: true
-      path: /h2-console
+      path: /h2
   
   sql:
     init:
@@ -85,7 +98,7 @@ logging:
 
 # 文件上传配置
 file:
-  upload-dir: /tmp/uploads/projects
+  upload-dir: c:/tmp/uploads/projects
 
 # Spring 文件上传配置
 spring.servlet.multipart:
