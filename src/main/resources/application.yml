@@ -82,3 +82,13 @@ logging:
     com.example.usermanagement: DEBUG
     com.alibaba.druid: INFO
   config: classpath:log4j2.xml
+
+# 文件上传配置
+file:
+  upload-dir: /tmp/uploads/projects
+
+# Spring 文件上传配置
+spring.servlet.multipart:
+  enabled: true
+  max-file-size: 10MB
+  max-request-size: 20MB

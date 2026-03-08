@@ -3,439 +3,633 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>用户管理系统 - Spring Boot + MyBatis + MapStruct</title>
+    <title>管理系统 - Spring Boot + MyBatis + MapStruct</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .modal-overlay {
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-        .fade-in {
-            animation: fadeIn 0.3s ease-in-out;
-        }
+        .modal-overlay { background-color: rgba(0, 0, 0, 0.5); }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
-        }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .btn-primary:hover { background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%); }
+        .tab-active { border-bottom: 3px solid #667eea; color: #667eea; }
+        .project-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+        .project-card { transition: all 0.3s ease; }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
     <div id="app" class="container mx-auto px-4 py-8">
         <!-- 头部 -->
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-800 mb-2">👥 用户管理系统</h1>
-            <p class="text-gray-600">基于 Spring Boot + MyBatis + MapStruct 构建</p>
+        <div class="mb-6">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">🚀 管理系统</h1>
+            <p class="text-gray-600">Spring Boot + MyBatis + MapStruct + Druid + Log4j2</p>
         </div>
 
-        <!-- 统计卡片 -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div class="bg-white rounded-lg shadow p-6">
-                <div class="flex items-center">
-                    <div class="p-3 rounded-full bg-blue-100 text-blue-600">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                        </svg>
-                    </div>
-                    <div class="ml-4">
-                        <p class="text-sm text-gray-500">用户总数</p>
-                        <p id="totalCount" class="text-2xl font-semibold text-gray-800">0</p>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-white rounded-lg shadow p-6">
-                <div class="flex items-center">
-                    <div class="p-3 rounded-full bg-green-100 text-green-600">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                    </div>
-                    <div class="ml-4">
-                        <p class="text-sm text-gray-500">活跃用户</p>
-                        <p id="activeCount" class="text-2xl font-semibold text-gray-800">0</p>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-white rounded-lg shadow p-6">
-                <div class="flex items-center">
-                    <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                        </svg>
-                    </div>
-                    <div class="ml-4">
-                        <p class="text-sm text-gray-500">管理员</p>
-                        <p id="adminCount" class="text-2xl font-semibold text-gray-800">0</p>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-white rounded-lg shadow p-6">
-                <div class="flex items-center">
-                    <div class="p-3 rounded-full bg-red-100 text-red-600">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
-                        </svg>
-                    </div>
-                    <div class="ml-4">
-                        <p class="text-sm text-gray-500">已禁用</p>
-                        <p id="disabledCount" class="text-2xl font-semibold text-gray-800">0</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 工具栏 -->
-        <div class="bg-white rounded-lg shadow mb-6 p-4">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-                <div class="flex items-center gap-4 w-full md:w-auto">
-                    <div class="relative flex-1 md:w-64">
-                        <input type="text" id="searchInput" placeholder="搜索用户名或邮箱..." 
-                            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <svg class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
-                    </div>
-                    <button onclick="searchUsers()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
-                        搜索
-                    </button>
-                    <button onclick="loadUsers()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
-                        重置
-                    </button>
-                </div>
-                <button onclick="openCreateModal()" class="btn-primary text-white px-6 py-2 rounded-lg transition flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                    </svg>
-                    新增用户
+        <!-- 导航标签 -->
+        <div class="bg-white rounded-lg shadow mb-6">
+            <div class="flex border-b">
+                <button onclick="switchTab('users')" id="tab-users" class="px-6 py-4 font-medium text-gray-600 hover:text-gray-800 tab-active">
+                    👥 用户管理
                 </button>
+                <button onclick="switchTab('projects')" id="tab-projects" class="px-6 py-4 font-medium text-gray-600 hover:text-gray-800">
+                    📁 项目管理
+                </button>
+                <div class="ml-auto flex items-center px-4">
+                    <a href="/swagger-ui.html" target="_blank" class="text-sm text-blue-600 hover:underline mr-4">📖 API文档</a>
+                    <a href="/druid/index.html" target="_blank" class="text-sm text-green-600 hover:underline">📊 Druid监控</a>
+                </div>
             </div>
         </div>
 
-        <!-- 用户表格 -->
-        <div class="bg-white rounded-lg shadow overflow-hidden">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">用户名</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">邮箱</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">电话</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">年龄</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">角色</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">创建时间</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
-                    </tr>
-                </thead>
-                <tbody id="userTableBody" class="bg-white divide-y divide-gray-200">
-                    <!-- 数据由 JavaScript 填充 -->
-                </tbody>
-            </table>
-            <div id="emptyState" class="hidden py-12 text-center text-gray-500">
-                <svg class="w-12 h-12 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
-                </svg>
-                <p>暂无用户数据</p>
+        <!-- 用户管理区域 -->
+        <div id="users-section">
+            <!-- 统计卡片 -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm text-gray-500">用户总数</p>
+                            <p id="userTotalCount" class="text-2xl font-semibold text-gray-800">0</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-green-100 text-green-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm text-gray-500">活跃用户</p>
+                            <p id="activeCount" class="text-2xl font-semibold text-gray-800">0</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm text-gray-500">管理员</p>
+                            <p id="adminCount" class="text-2xl font-semibold text-gray-800">0</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-red-100 text-red-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm text-gray-500">已禁用</p>
+                            <p id="disabledCount" class="text-2xl font-semibold text-gray-800">0</p>
+                        </div>
+                    </div>
+                </div>
             </div>
+
+            <!-- 用户工具栏 -->
+            <div class="bg-white rounded-lg shadow mb-6 p-4">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="flex items-center gap-4 w-full md:w-auto">
+                        <div class="relative flex-1 md:w-64">
+                            <input type="text" id="userSearchInput" placeholder="搜索用户名或邮箱..." 
+                                class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <svg class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                        <button onclick="searchUsers()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">搜索</button>
+                        <button onclick="loadUsers()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">重置</button>
+                    </div>
+                    <button onclick="openUserCreateModal()" class="btn-primary text-white px-6 py-2 rounded-lg transition flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        新增用户
+                    </button>
+                </div>
+            </div>
+
+            <!-- 用户表格 -->
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">用户名</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">邮箱</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">电话</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">角色</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody" class="bg-white divide-y divide-gray-200"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 项目管理区域 -->
+        <div id="projects-section" class="hidden">
+            <!-- 项目统计卡片 -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm text-gray-500">项目总数</p>
+                            <p id="projectTotalCount" class="text-2xl font-semibold text-gray-800">0</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm text-gray-500">进行中</p>
+                            <p id="projectInProgress" class="text-2xl font-semibold text-gray-800">0</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-green-100 text-green-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm text-gray-500">已完成</p>
+                            <p id="projectCompleted" class="text-2xl font-semibold text-gray-800">0</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-gray-100 text-gray-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm text-gray-500">已暂停</p>
+                            <p id="projectPaused" class="text-2xl font-semibold text-gray-800">0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 项目工具栏 -->
+            <div class="bg-white rounded-lg shadow mb-6 p-4">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="flex items-center gap-4 w-full md:w-auto">
+                        <div class="relative flex-1 md:w-64">
+                            <input type="text" id="projectSearchInput" placeholder="搜索项目名称或编号..." 
+                                class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                            <svg class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                        <button onclick="searchProjects()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">搜索</button>
+                        <button onclick="loadProjects()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">重置</button>
+                    </div>
+                    <button onclick="openProjectCreateModal()" class="btn-primary text-white px-6 py-2 rounded-lg transition flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        新增项目
+                    </button>
+                </div>
+            </div>
+
+            <!-- 项目卡片列表 -->
+            <div id="projectCards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </div>
     </div>
 
-    <!-- 创建/编辑用户弹窗 -->
+    <!-- 用户模态框 -->
     <div id="userModal" class="fixed inset-0 z-50 hidden">
-        <div class="modal-overlay absolute inset-0" onclick="closeModal()"></div>
+        <div class="modal-overlay absolute inset-0" onclick="closeUserModal()"></div>
         <div class="relative min-h-screen flex items-center justify-center p-4">
             <div class="bg-white rounded-lg shadow-xl max-w-md w-full fade-in relative z-10">
                 <div class="px-6 py-4 border-b border-gray-200">
-                    <h3 id="modalTitle" class="text-lg font-semibold text-gray-800">新增用户</h3>
+                    <h3 id="userModalTitle" class="text-lg font-semibold text-gray-800">新增用户</h3>
                 </div>
                 <form id="userForm" class="p-6 space-y-4">
                     <input type="hidden" id="userId">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">用户名 *</label>
-                        <input type="text" id="username" required
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <input type="text" id="username" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">邮箱 *</label>
-                        <input type="email" id="email" required
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <input type="email" id="email" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">电话</label>
-                        <input type="text" id="phone"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <input type="text" id="phone" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">年龄</label>
-                        <input type="number" id="age" min="1" max="150"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <input type="number" id="age" min="1" max="150" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">角色</label>
-                        <select id="role" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <select id="role" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                             <option value="user">普通用户</option>
                             <option value="admin">管理员</option>
                         </select>
                     </div>
-                    <div id="statusField" class="hidden">
+                    <div id="userStatusField" class="hidden">
                         <label class="block text-sm font-medium text-gray-700 mb-1">状态</label>
-                        <select id="status" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <select id="status" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                             <option value="1">启用</option>
                             <option value="0">禁用</option>
                         </select>
                     </div>
                 </form>
                 <div class="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
-                    <button onclick="closeModal()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
-                        取消
-                    </button>
-                    <button onclick="saveUser()" class="btn-primary text-white px-6 py-2 rounded-lg transition">
-                        保存
-                    </button>
+                    <button onclick="closeUserModal()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">取消</button>
+                    <button onclick="saveUser()" class="btn-primary text-white px-6 py-2 rounded-lg">保存</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 消息提示 -->
+    <!-- 项目模态框 -->
+    <div id="projectModal" class="fixed inset-0 z-50 hidden">
+        <div class="modal-overlay absolute inset-0" onclick="closeProjectModal()"></div>
+        <div class="relative min-h-screen flex items-center justify-center p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-lg w-full fade-in relative z-10">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 id="projectModalTitle" class="text-lg font-semibold text-gray-800">新增项目</h3>
+                </div>
+                <form id="projectForm" class="p-6 space-y-4">
+                    <input type="hidden" id="projectId">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">项目编号 *</label>
+                            <input type="text" id="projectCode" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">项目名称 *</label>
+                            <input type="text" id="projectName" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">项目描述</label>
+                        <textarea id="description" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"></textarea>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">开始日期</label>
+                            <input type="date" id="startDate" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">结束日期</label>
+                            <input type="date" id="endDate" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                        </div>
+                    </div>
+                    <div id="projectStatusField" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">状态</label>
+                        <select id="projectStatus" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                            <option value="1">进行中</option>
+                            <option value="2">已完成</option>
+                            <option value="0">已暂停</option>
+                        </select>
+                    </div>
+                    <div id="imageUploadSection" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">项目图片</label>
+                        <div class="flex items-center gap-3">
+                            <input type="file" id="projectImage" accept="image/*" class="flex-1 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100">
+                            <button type="button" onclick="uploadProjectImage()" class="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200">上传</button>
+                        </div>
+                        <div id="imagePreview" class="mt-2 hidden">
+                            <img id="previewImg" class="w-full h-32 object-cover rounded-lg">
+                        </div>
+                    </div>
+                </form>
+                <div class="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
+                    <button onclick="closeProjectModal()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">取消</button>
+                    <button onclick="saveProject()" class="btn-primary text-white px-6 py-2 rounded-lg">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast 消息 -->
     <div id="toast" class="fixed top-4 right-4 z-50 hidden">
-        <div class="bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-            </svg>
+        <div id="toastDiv" class="bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2">
             <span id="toastMessage">操作成功</span>
         </div>
     </div>
 
     <script>
-        const API_BASE = '/api/users';
+        // 全局变量
         let users = [];
+        let projects = [];
+        let currentTab = 'users';
 
-        // 页面加载时获取用户列表
+        // 页面加载
         document.addEventListener('DOMContentLoaded', () => {
             loadUsers();
+            loadProjectStats();
         });
 
-        // 加载用户列表
+        // 切换标签页
+        function switchTab(tab) {
+            currentTab = tab;
+            document.getElementById('tab-users').classList.toggle('tab-active', tab === 'users');
+            document.getElementById('tab-projects').classList.toggle('tab-active', tab === 'projects');
+            document.getElementById('users-section').classList.toggle('hidden', tab !== 'users');
+            document.getElementById('projects-section').classList.toggle('hidden', tab !== 'projects');
+            
+            if (tab === 'projects' && projects.length === 0) {
+                loadProjects();
+            }
+        }
+
+        // ==================== 用户管理 ====================
         async function loadUsers() {
             try {
-                const response = await fetch(API_BASE);
-                const result = await response.json();
+                const res = await fetch('/api/users');
+                const result = await res.json();
                 users = result.data || [];
                 renderUsers();
-                updateStats();
-            } catch (error) {
-                showToast('加载用户列表失败: ' + error.message, 'error');
-            }
+                updateUserStats();
+            } catch (e) { showToast('加载用户列表失败', 'error'); }
         }
 
-        // 搜索用户
         async function searchUsers() {
-            const keyword = document.getElementById('searchInput').value.trim();
-            if (!keyword) {
-                loadUsers();
-                return;
-            }
+            const keyword = document.getElementById('userSearchInput').value.trim();
+            if (!keyword) { loadUsers(); return; }
             try {
-                const response = await fetch(`${API_BASE}/search?keyword=${encodeURIComponent(keyword)}`);
-                const result = await response.json();
+                const res = await fetch(`/api/users/search?keyword=${encodeURIComponent(keyword)}`);
+                const result = await res.json();
                 users = result.data || [];
                 renderUsers();
-            } catch (error) {
-                showToast('搜索失败: ' + error.message, 'error');
-            }
+            } catch (e) { showToast('搜索失败', 'error'); }
         }
 
-        // 渲染用户列表
         function renderUsers() {
             const tbody = document.getElementById('userTableBody');
-            const emptyState = document.getElementById('emptyState');
-            
-            if (users.length === 0) {
-                tbody.innerHTML = '';
-                emptyState.classList.remove('hidden');
-                return;
-            }
-            
-            emptyState.classList.add('hidden');
-            tbody.innerHTML = users.map(user => `
-                <tr class="hover:bg-gray-50 transition">
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${user.id}</td>
-                    <td class="px-6 py-4 whitespace-nowrap">
+            tbody.innerHTML = users.map(u => `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 text-sm text-gray-500">${u.id}</td>
+                    <td class="px-6 py-4">
                         <div class="flex items-center">
-                            <div class="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white text-sm font-medium">
-                                ${user.username.charAt(0)}
-                            </div>
-                            <span class="ml-3 text-sm font-medium text-gray-900">${user.username}</span>
+                            <div class="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white text-sm">${u.username.charAt(0)}</div>
+                            <span class="ml-3 text-sm font-medium text-gray-900">${u.username}</span>
                         </div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${user.email}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${user.phone || '-'}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${user.age || '-'}</td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 py-1 text-xs font-medium rounded-full ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}">
-                            ${user.role === 'admin' ? '管理员' : '普通用户'}
-                        </span>
+                    <td class="px-6 py-4 text-sm text-gray-500">${u.email}</td>
+                    <td class="px-6 py-4 text-sm text-gray-500">${u.phone || '-'}</td>
+                    <td class="px-6 py-4">
+                        <span class="px-2 py-1 text-xs rounded-full ${u.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}">${u.role === 'admin' ? '管理员' : '普通用户'}</span>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 py-1 text-xs font-medium rounded-full ${user.status === 1 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
-                            ${user.status === 1 ? '启用' : '禁用'}
-                        </span>
+                    <td class="px-6 py-4">
+                        <span class="px-2 py-1 text-xs rounded-full ${u.status === 1 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${u.status === 1 ? '启用' : '禁用'}</span>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatDate(user.createdAt)}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm">
-                        <button onclick="openEditModal(${user.id})" class="text-blue-600 hover:text-blue-800 mr-3">编辑</button>
-                        <button onclick="deleteUser(${user.id})" class="text-red-600 hover:text-red-800">删除</button>
+                    <td class="px-6 py-4 text-sm">
+                        <button onclick="openUserEditModal(${u.id})" class="text-blue-600 hover:text-blue-800 mr-3">编辑</button>
+                        <button onclick="deleteUser(${u.id})" class="text-red-600 hover:text-red-800">删除</button>
                     </td>
                 </tr>
             `).join('');
         }
 
-        // 更新统计数据
-        function updateStats() {
-            document.getElementById('totalCount').textContent = users.length;
+        function updateUserStats() {
+            document.getElementById('userTotalCount').textContent = users.length;
             document.getElementById('activeCount').textContent = users.filter(u => u.status === 1).length;
             document.getElementById('adminCount').textContent = users.filter(u => u.role === 'admin').length;
             document.getElementById('disabledCount').textContent = users.filter(u => u.status === 0).length;
         }
 
-        // 打开创建弹窗
-        function openCreateModal() {
-            document.getElementById('modalTitle').textContent = '新增用户';
+        function openUserCreateModal() {
+            document.getElementById('userModalTitle').textContent = '新增用户';
             document.getElementById('userForm').reset();
             document.getElementById('userId').value = '';
-            document.getElementById('statusField').classList.add('hidden');
+            document.getElementById('userStatusField').classList.add('hidden');
             document.getElementById('userModal').classList.remove('hidden');
         }
 
-        // 打开编辑弹窗
-        async function openEditModal(id) {
-            try {
-                const response = await fetch(`${API_BASE}/${id}`);
-                const result = await response.json();
-                const user = result.data;
-                
-                document.getElementById('modalTitle').textContent = '编辑用户';
-                document.getElementById('userId').value = user.id;
-                document.getElementById('username').value = user.username;
-                document.getElementById('email').value = user.email;
-                document.getElementById('phone').value = user.phone || '';
-                document.getElementById('age').value = user.age || '';
-                document.getElementById('role').value = user.role;
-                document.getElementById('status').value = user.status;
-                document.getElementById('statusField').classList.remove('hidden');
-                document.getElementById('userModal').classList.remove('hidden');
-            } catch (error) {
-                showToast('获取用户信息失败: ' + error.message, 'error');
-            }
+        async function openUserEditModal(id) {
+            const u = users.find(x => x.id === id);
+            if (!u) return;
+            document.getElementById('userModalTitle').textContent = '编辑用户';
+            document.getElementById('userId').value = u.id;
+            document.getElementById('username').value = u.username;
+            document.getElementById('email').value = u.email;
+            document.getElementById('phone').value = u.phone || '';
+            document.getElementById('age').value = u.age || '';
+            document.getElementById('role').value = u.role;
+            document.getElementById('status').value = u.status;
+            document.getElementById('userStatusField').classList.remove('hidden');
+            document.getElementById('userModal').classList.remove('hidden');
         }
 
-        // 关闭弹窗
-        function closeModal() {
-            document.getElementById('userModal').classList.add('hidden');
-        }
+        function closeUserModal() { document.getElementById('userModal').classList.add('hidden'); }
 
-        // 保存用户
         async function saveUser() {
             const id = document.getElementById('userId').value;
-            const userData = {
+            const data = {
                 username: document.getElementById('username').value,
                 email: document.getElementById('email').value,
                 phone: document.getElementById('phone').value || null,
                 age: document.getElementById('age').value ? parseInt(document.getElementById('age').value) : null,
                 role: document.getElementById('role').value
             };
-            
-            if (id) {
-                // 编辑模式
-                userData.status = parseInt(document.getElementById('status').value);
-                try {
-                    const response = await fetch(`${API_BASE}/${id}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(userData)
-                    });
-                    const result = await response.json();
-                    if (result.code === 200) {
-                        showToast('更新用户成功');
-                        closeModal();
-                        loadUsers();
-                    } else {
-                        showToast(result.message, 'error');
-                    }
-                } catch (error) {
-                    showToast('更新用户失败: ' + error.message, 'error');
-                }
-            } else {
-                // 创建模式
-                try {
-                    const response = await fetch(API_BASE, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(userData)
-                    });
-                    const result = await response.json();
-                    if (result.code === 200) {
-                        showToast('创建用户成功');
-                        closeModal();
-                        loadUsers();
-                    } else {
-                        showToast(result.message, 'error');
-                    }
-                } catch (error) {
-                    showToast('创建用户失败: ' + error.message, 'error');
-                }
-            }
+            try {
+                const url = id ? `/api/users/${id}` : '/api/users';
+                const method = id ? 'PUT' : 'POST';
+                if (id) data.status = parseInt(document.getElementById('status').value);
+                const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+                const result = await res.json();
+                if (result.code === 200) { showToast(id ? '更新成功' : '创建成功'); closeUserModal(); loadUsers(); }
+                else showToast(result.message, 'error');
+            } catch (e) { showToast('操作失败', 'error'); }
         }
 
-        // 删除用户
         async function deleteUser(id) {
-            if (!confirm('确定要删除该用户吗？')) return;
+            if (!confirm('确定删除该用户？')) return;
+            try {
+                const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
+                const result = await res.json();
+                if (result.code === 200) { showToast('删除成功'); loadUsers(); }
+                else showToast(result.message, 'error');
+            } catch (e) { showToast('删除失败', 'error'); }
+        }
+
+        // ==================== 项目管理 ====================
+        async function loadProjects() {
+            try {
+                const res = await fetch('/api/projects');
+                const result = await res.json();
+                projects = result.data || [];
+                renderProjects();
+                loadProjectStats();
+            } catch (e) { showToast('加载项目列表失败', 'error'); }
+        }
+
+        async function loadProjectStats() {
+            try {
+                const res = await fetch('/api/projects/count');
+                const result = await res.json();
+                const data = result.data || {};
+                document.getElementById('projectTotalCount').textContent = data.total || 0;
+                document.getElementById('projectInProgress').textContent = data.inProgress || 0;
+                document.getElementById('projectCompleted').textContent = data.completed || 0;
+                document.getElementById('projectPaused').textContent = data.paused || 0;
+            } catch (e) {}
+        }
+
+        async function searchProjects() {
+            const keyword = document.getElementById('projectSearchInput').value.trim();
+            if (!keyword) { loadProjects(); return; }
+            try {
+                const res = await fetch(`/api/projects/search?keyword=${encodeURIComponent(keyword)}`);
+                const result = await res.json();
+                projects = result.data || [];
+                renderProjects();
+            } catch (e) { showToast('搜索失败', 'error'); }
+        }
+
+        function renderProjects() {
+            const container = document.getElementById('projectCards');
+            container.innerHTML = projects.map(p => `
+                <div class="project-card bg-white rounded-lg shadow overflow-hidden">
+                    <div class="h-40 bg-gradient-to-r ${p.status === 1 ? 'from-blue-400 to-purple-500' : p.status === 2 ? 'from-green-400 to-teal-500' : 'from-gray-400 to-gray-500'} flex items-center justify-center">
+                        ${p.imageUrl ? `<img src="${p.imageUrl}" class="w-full h-full object-cover">` : `<span class="text-white text-6xl">📁</span>`}
+                    </div>
+                    <div class="p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-semibold text-gray-800 truncate">${p.projectName}</h3>
+                            <span class="px-2 py-1 text-xs rounded-full ${p.status === 1 ? 'bg-blue-100 text-blue-700' : p.status === 2 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}">${p.statusName}</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-2">编号: ${p.projectCode}</p>
+                        <p class="text-sm text-gray-600 mb-3 line-clamp-2">${p.description || '暂无描述'}</p>
+                        <div class="flex justify-between items-center text-xs text-gray-400 mb-3">
+                            <span>开始: ${p.startDate ? p.startDate.split('T')[0] : '-'}</span>
+                            <span>结束: ${p.endDate ? p.endDate.split('T')[0] : '-'}</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="openProjectEditModal(${p.id})" class="flex-1 px-3 py-1.5 bg-blue-50 text-blue-600 rounded hover:bg-blue-100 text-sm">编辑</button>
+                            <button onclick="deleteProject(${p.id})" class="flex-1 px-3 py-1.5 bg-red-50 text-red-600 rounded hover:bg-red-100 text-sm">删除</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openProjectCreateModal() {
+            document.getElementById('projectModalTitle').textContent = '新增项目';
+            document.getElementById('projectForm').reset();
+            document.getElementById('projectId').value = '';
+            document.getElementById('projectStatusField').classList.add('hidden');
+            document.getElementById('imageUploadSection').classList.add('hidden');
+            document.getElementById('projectModal').classList.remove('hidden');
+        }
+
+        async function openProjectEditModal(id) {
+            const p = projects.find(x => x.id === id);
+            if (!p) return;
+            document.getElementById('projectModalTitle').textContent = '编辑项目';
+            document.getElementById('projectId').value = p.id;
+            document.getElementById('projectCode').value = p.projectCode;
+            document.getElementById('projectName').value = p.projectName;
+            document.getElementById('description').value = p.description || '';
+            document.getElementById('startDate').value = p.startDate ? p.startDate.split('T')[0] : '';
+            document.getElementById('endDate').value = p.endDate ? p.endDate.split('T')[0] : '';
+            document.getElementById('projectStatus').value = p.status;
+            document.getElementById('projectStatusField').classList.remove('hidden');
+            document.getElementById('imageUploadSection').classList.remove('hidden');
+            document.getElementById('projectModal').classList.remove('hidden');
+        }
+
+        function closeProjectModal() { document.getElementById('projectModal').classList.add('hidden'); }
+
+        async function saveProject() {
+            const id = document.getElementById('projectId').value;
+            const data = {
+                projectCode: document.getElementById('projectCode').value,
+                projectName: document.getElementById('projectName').value,
+                description: document.getElementById('description').value || null,
+                startDate: document.getElementById('startDate').value ? document.getElementById('startDate').value + 'T00:00:00' : null,
+                endDate: document.getElementById('endDate').value ? document.getElementById('endDate').value + 'T23:59:59' : null
+            };
+            if (id) data.status = parseInt(document.getElementById('projectStatus').value);
+            try {
+                const url = id ? `/api/projects/${id}` : '/api/projects';
+                const method = id ? 'PUT' : 'POST';
+                const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+                const result = await res.json();
+                if (result.code === 200) { showToast(id ? '更新成功' : '创建成功'); closeProjectModal(); loadProjects(); }
+                else showToast(result.message, 'error');
+            } catch (e) { showToast('操作失败', 'error'); }
+        }
+
+        async function uploadProjectImage() {
+            const id = document.getElementById('projectId').value;
+            const fileInput = document.getElementById('projectImage');
+            if (!id) { showToast('请先保存项目', 'error'); return; }
+            if (!fileInput.files.length) { showToast('请选择图片', 'error'); return; }
+            
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
             
             try {
-                const response = await fetch(`${API_BASE}/${id}`, { method: 'DELETE' });
-                const result = await response.json();
-                if (result.code === 200) {
-                    showToast('删除用户成功');
-                    loadUsers();
-                } else {
-                    showToast(result.message, 'error');
-                }
-            } catch (error) {
-                showToast('删除用户失败: ' + error.message, 'error');
-            }
+                const res = await fetch(`/api/projects/${id}/image`, { method: 'POST', body: formData });
+                const result = await res.json();
+                if (result.code === 200) { showToast('图片上传成功'); loadProjects(); }
+                else showToast(result.message, 'error');
+            } catch (e) { showToast('上传失败', 'error'); }
         }
 
-        // 格式化日期
-        function formatDate(dateStr) {
-            if (!dateStr) return '-';
-            const date = new Date(dateStr);
-            return date.toLocaleDateString('zh-CN') + ' ' + date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+        async function deleteProject(id) {
+            if (!confirm('确定删除该项目？')) return;
+            try {
+                const res = await fetch(`/api/projects/${id}`, { method: 'DELETE' });
+                const result = await res.json();
+                if (result.code === 200) { showToast('删除成功'); loadProjects(); }
+                else showToast(result.message, 'error');
+            } catch (e) { showToast('删除失败', 'error'); }
         }
 
-        // 显示消息提示
+        // ==================== 工具函数 ====================
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
-            const toastMessage = document.getElementById('toastMessage');
-            const toastDiv = toast.querySelector('div');
-            
-            toastMessage.textContent = message;
+            const toastDiv = document.getElementById('toastDiv');
+            document.getElementById('toastMessage').textContent = message;
             toastDiv.className = `${type === 'error' ? 'bg-red-500' : 'bg-green-500'} text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2`;
-            
             toast.classList.remove('hidden');
-            setTimeout(() => {
-                toast.classList.add('hidden');
-            }, 3000);
+            setTimeout(() => toast.classList.add('hidden'), 3000);
         }
 
         // 回车搜索
-        document.getElementById('searchInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') searchUsers();
-        });
+        document.getElementById('userSearchInput').addEventListener('keypress', e => { if (e.key === 'Enter') searchUsers(); });
+        document.getElementById('projectSearchInput').addEventListener('keypress', e => { if (e.key === 'Enter') searchProjects(); });
     </script>
 </body>
 </html>
