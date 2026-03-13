@@ -1,10 +1,13 @@
 -- 初始化示例数据
-INSERT INTO users (username, email, phone, age, role, status) VALUES
-('张三', 'zhangsan@example.com', '13800138001', 28, 'admin', 1),
-('李四', 'lisi@example.com', '13800138002', 25, 'user', 1),
-('王五', 'wangwu@example.com', '13800138003', 30, 'user', 1),
-('赵六', 'zhaoliu@example.com', '13800138004', 22, 'user', 1),
-('钱七', 'qianqi@example.com', '13800138005', 35, 'user', 0);
+-- 默认密码: 123456 (BCrypt加密)
+-- 密码哈希: $2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi
+INSERT INTO users (username, password, email, phone, age, role, status) VALUES
+('admin', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 'admin@example.com', '13800138000', 28, 'admin', 1),
+('张三', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 'zhangsan@example.com', '13800138001', 28, 'admin', 1),
+('李四', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 'lisi@example.com', '13800138002', 25, 'user', 1),
+('王五', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 'wangwu@example.com', '13800138003', 30, 'user', 1),
+('赵六', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 'zhaoliu@example.com', '13800138004', 22, 'user', 1),
+('钱七', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 'qianqi@example.com', '13800138005', 35, 'user', 0);
 
 -- 初始化项目示例数据
 INSERT INTO projects (project_code, project_name, description, status, start_date, end_date) VALUES

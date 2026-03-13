@@ -12,7 +12,7 @@ public interface ProjectMapper {
     
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "imageUrl", ignore = true)
-    @Mapping(target = "status", constant = "1")
+    @Mapping(target = "status", expression = "java(dto.getStatus() != null ? dto.getStatus() : 1)")
     @Mapping(target = "createdAt", expression = "java(java.time.LocalDateTime.now())")
     @Mapping(target = "updatedAt", expression = "java(java.time.LocalDateTime.now())")
     Project toEntity(ProjectCreateDTO dto);

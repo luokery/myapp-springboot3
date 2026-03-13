@@ -144,4 +144,13 @@ public class UserService {
         log.debug("统计用户数量");
         return userRepository.count();
     }
+    
+    /**
+     * 根据用户名查找用户（用于认证）
+     * 不缓存，每次都从数据库获取最新数据
+     */
+    public User findByUsername(String username) {
+        log.debug("根据用户名查找用户: {}", username);
+        return userRepository.findByUsername(username).orElse(null);
+    }
 }

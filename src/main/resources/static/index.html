@@ -17,215 +17,306 @@
         .tab-active { border-bottom: 3px solid #667eea; color: #667eea; }
         .project-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
         .project-card { transition: all 0.3s ease; }
+        .login-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
-    <div id="app" class="container mx-auto px-4 py-8">
-        <!-- 头部 -->
-        <div class="mb-6">
-            <h1 class="text-3xl font-bold text-gray-800 mb-2">🚀 管理系统</h1>
-            <p class="text-gray-600">Spring Boot + MyBatis + MapStruct + Druid + Log4j2</p>
-        </div>
-
-        <!-- 导航标签 -->
-        <div class="bg-white rounded-lg shadow mb-6">
-            <div class="flex border-b">
-                <button onclick="switchTab('users')" id="tab-users" class="px-6 py-4 font-medium text-gray-600 hover:text-gray-800 tab-active">
-                    👥 用户管理
-                </button>
-                <button onclick="switchTab('projects')" id="tab-projects" class="px-6 py-4 font-medium text-gray-600 hover:text-gray-800">
-                    📁 项目管理
-                </button>
-                <div class="ml-auto flex items-center px-4">
-                    <a href="/swagger-ui.html" target="_blank" class="text-sm text-blue-600 hover:underline mr-4">📖 API文档</a>
-                    <a href="/druid/index.html" target="_blank" class="text-sm text-green-600 hover:underline">📊 Druid监控</a>
+    <!-- 登录页面 -->
+    <div id="loginPage" class="min-h-screen flex items-center justify-center login-bg">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md fade-in">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                    </svg>
                 </div>
+                <h1 class="text-2xl font-bold text-gray-800">管理系统</h1>
+                <p class="text-gray-500 mt-2">请登录以继续</p>
             </div>
-        </div>
-
-        <!-- 用户管理区域 -->
-        <div id="users-section">
-            <!-- 统计卡片 -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-blue-100 text-blue-600">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm text-gray-500">用户总数</p>
-                            <p id="userTotalCount" class="text-2xl font-semibold text-gray-800">0</p>
-                        </div>
+            
+            <div id="loginFormContainer">
+                <form id="loginForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">用户名</label>
+                        <input type="text" id="loginUsername" required 
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            placeholder="请输入用户名">
                     </div>
-                </div>
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-green-100 text-green-600">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm text-gray-500">活跃用户</p>
-                            <p id="activeCount" class="text-2xl font-semibold text-gray-800">0</p>
-                        </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">密码</label>
+                        <input type="password" id="loginPassword" required 
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            placeholder="请输入密码">
                     </div>
-                </div>
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm text-gray-500">管理员</p>
-                            <p id="adminCount" class="text-2xl font-semibold text-gray-800">0</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-red-100 text-red-600">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm text-gray-500">已禁用</p>
-                            <p id="disabledCount" class="text-2xl font-semibold text-gray-800">0</p>
-                        </div>
-                    </div>
+                    <button type="submit" class="w-full btn-primary text-white py-3 rounded-lg font-medium transition transform hover:scale-[1.02]">
+                        登 录
+                    </button>
+                </form>
+                <div class="mt-6 text-center">
+                    <button onclick="showRegisterForm()" class="text-purple-600 hover:underline">没有账号？立即注册</button>
                 </div>
             </div>
 
-            <!-- 用户工具栏 -->
-            <div class="bg-white rounded-lg shadow mb-6 p-4">
-                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-                    <div class="flex items-center gap-4 w-full md:w-auto">
-                        <div class="relative flex-1 md:w-64">
-                            <input type="text" id="userSearchInput" placeholder="搜索用户名或邮箱..." 
-                                class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <svg class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                            </svg>
-                        </div>
-                        <button onclick="searchUsers()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">搜索</button>
-                        <button onclick="loadUsers()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">重置</button>
+            <div id="registerFormContainer" class="hidden">
+                <form id="registerForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">用户名</label>
+                        <input type="text" id="regUsername" required 
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            placeholder="请输入用户名">
                     </div>
-                    <button onclick="openUserCreateModal()" class="btn-primary text-white px-6 py-2 rounded-lg transition flex items-center gap-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">邮箱</label>
+                        <input type="email" id="regEmail" required 
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            placeholder="请输入邮箱">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">密码</label>
+                        <input type="password" id="regPassword" required 
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            placeholder="请输入密码（至少6位）">
+                    </div>
+                    <button type="submit" class="w-full btn-primary text-white py-3 rounded-lg font-medium transition transform hover:scale-[1.02]">
+                        注 册
+                    </button>
+                </form>
+                <div class="mt-6 text-center">
+                    <button onclick="showLoginForm()" class="text-purple-600 hover:underline">已有账号？返回登录</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主应用页面 -->
+    <div id="mainApp" class="hidden">
+        <div id="app" class="container mx-auto px-4 py-8">
+            <!-- 头部 -->
+            <div class="mb-6 flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2">🚀 管理系统</h1>
+                    <p class="text-gray-600">Spring Boot + MyBatis + MapStruct + Druid + Log4j2</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="text-right">
+                        <p id="welcomeUser" class="text-sm font-medium text-gray-800"></p>
+                        <p class="text-xs text-gray-500">欢迎回来</p>
+                    </div>
+                    <button onclick="logout()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
                         </svg>
-                        新增用户
+                        退出
                     </button>
                 </div>
             </div>
 
-            <!-- 用户表格 -->
-            <div class="bg-white rounded-lg shadow overflow-hidden">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">用户名</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">邮箱</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">电话</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">角色</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
-                        </tr>
-                    </thead>
-                    <tbody id="userTableBody" class="bg-white divide-y divide-gray-200"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- 项目管理区域 -->
-        <div id="projects-section" class="hidden">
-            <!-- 项目统计卡片 -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-purple-100 text-purple-600">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm text-gray-500">项目总数</p>
-                            <p id="projectTotalCount" class="text-2xl font-semibold text-gray-800">0</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-blue-100 text-blue-600">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm text-gray-500">进行中</p>
-                            <p id="projectInProgress" class="text-2xl font-semibold text-gray-800">0</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-green-100 text-green-600">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm text-gray-500">已完成</p>
-                            <p id="projectCompleted" class="text-2xl font-semibold text-gray-800">0</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-gray-100 text-gray-600">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm text-gray-500">已暂停</p>
-                            <p id="projectPaused" class="text-2xl font-semibold text-gray-800">0</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 项目工具栏 -->
-            <div class="bg-white rounded-lg shadow mb-6 p-4">
-                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-                    <div class="flex items-center gap-4 w-full md:w-auto">
-                        <div class="relative flex-1 md:w-64">
-                            <input type="text" id="projectSearchInput" placeholder="搜索项目名称或编号..." 
-                                class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                            <svg class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                            </svg>
-                        </div>
-                        <button onclick="searchProjects()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">搜索</button>
-                        <button onclick="loadProjects()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">重置</button>
-                    </div>
-                    <button onclick="openProjectCreateModal()" class="btn-primary text-white px-6 py-2 rounded-lg transition flex items-center gap-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                        </svg>
-                        新增项目
+            <!-- 导航标签 -->
+            <div class="bg-white rounded-lg shadow mb-6">
+                <div class="flex border-b">
+                    <button onclick="switchTab('users')" id="tab-users" class="px-6 py-4 font-medium text-gray-600 hover:text-gray-800 tab-active">
+                        👥 用户管理
                     </button>
+                    <button onclick="switchTab('projects')" id="tab-projects" class="px-6 py-4 font-medium text-gray-600 hover:text-gray-800">
+                        📁 项目管理
+                    </button>
+                    <div class="ml-auto flex items-center px-4">
+                        <a href="/swagger-ui.html" target="_blank" class="text-sm text-blue-600 hover:underline mr-4">📖 API文档</a>
+                        <a href="/druid/index.html" target="_blank" class="text-sm text-green-600 hover:underline">📊 Druid监控</a>
+                    </div>
                 </div>
             </div>
 
-            <!-- 项目卡片列表 -->
-            <div id="projectCards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            <!-- 用户管理区域 -->
+            <div id="users-section">
+                <!-- 统计卡片 -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                </svg>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm text-gray-500">用户总数</p>
+                                <p id="userTotalCount" class="text-2xl font-semibold text-gray-800">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-full bg-green-100 text-green-600">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm text-gray-500">活跃用户</p>
+                                <p id="activeCount" class="text-2xl font-semibold text-gray-800">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                                </svg>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm text-gray-500">管理员</p>
+                                <p id="adminCount" class="text-2xl font-semibold text-gray-800">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-full bg-red-100 text-red-600">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
+                                </svg>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm text-gray-500">已禁用</p>
+                                <p id="disabledCount" class="text-2xl font-semibold text-gray-800">0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 用户工具栏 -->
+                <div class="bg-white rounded-lg shadow mb-6 p-4">
+                    <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                        <div class="flex items-center gap-4 w-full md:w-auto">
+                            <div class="relative flex-1 md:w-64">
+                                <input type="text" id="userSearchInput" placeholder="搜索用户名或邮箱..." 
+                                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <svg class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            </div>
+                            <button onclick="searchUsers()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">搜索</button>
+                            <button onclick="loadUsers()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">重置</button>
+                        </div>
+                        <button onclick="openUserCreateModal()" class="btn-primary text-white px-6 py-2 rounded-lg transition flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            新增用户
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 用户表格 -->
+                <div class="bg-white rounded-lg shadow overflow-hidden">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">用户名</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">邮箱</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">电话</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">角色</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userTableBody" class="bg-white divide-y divide-gray-200"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 项目管理区域 -->
+            <div id="projects-section" class="hidden">
+                <!-- 项目统计卡片 -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                </svg>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm text-gray-500">项目总数</p>
+                                <p id="projectTotalCount" class="text-2xl font-semibold text-gray-800">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                </svg>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm text-gray-500">进行中</p>
+                                <p id="projectInProgress" class="text-2xl font-semibold text-gray-800">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-full bg-green-100 text-green-600">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm text-gray-500">已完成</p>
+                                <p id="projectCompleted" class="text-2xl font-semibold text-gray-800">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-full bg-gray-100 text-gray-600">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm text-gray-500">已暂停</p>
+                                <p id="projectPaused" class="text-2xl font-semibold text-gray-800">0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 项目工具栏 -->
+                <div class="bg-white rounded-lg shadow mb-6 p-4">
+                    <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                        <div class="flex flex-wrap items-center gap-4">
+                            <div class="relative">
+                                <input type="text" id="projectSearchInput" placeholder="搜索项目名称或编号..." 
+                                    class="w-48 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                <svg class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            </div>
+                            <select id="projectStatusFilter" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                                <option value="">全部状态</option>
+                                <option value="1">进行中</option>
+                                <option value="2">已完成</option>
+                                <option value="0">已暂停</option>
+                            </select>
+                            <button onclick="searchProjects()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">搜索</button>
+                            <button onclick="resetProjectSearch()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">重置</button>
+                        </div>
+                        <button onclick="openProjectCreateModal()" class="btn-primary text-white px-6 py-2 rounded-lg transition flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            新增项目
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 项目卡片列表 -->
+                <div id="projectCards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </div>
         </div>
     </div>
 
@@ -291,7 +382,7 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">项目编号 *</label>
-                            <input type="text" id="projectCode" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                            <input type="text" id="projectCode" required placeholder="PRJ-2024-001" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">项目名称 *</label>
@@ -304,6 +395,17 @@
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">状态</label>
+                            <select id="projectStatus" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                                <option value="1">进行中</option>
+                                <option value="2">已完成</option>
+                                <option value="0">已暂停</option>
+                            </select>
+                        </div>
+                        <div></div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">开始日期</label>
                             <input type="date" id="startDate" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
                         </div>
@@ -312,22 +414,11 @@
                             <input type="date" id="endDate" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
                         </div>
                     </div>
-                    <div id="projectStatusField" class="hidden">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">状态</label>
-                        <select id="projectStatus" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
-                            <option value="1">进行中</option>
-                            <option value="2">已完成</option>
-                            <option value="0">已暂停</option>
-                        </select>
-                    </div>
                     <div id="imageUploadSection" class="hidden">
                         <label class="block text-sm font-medium text-gray-700 mb-1">项目图片</label>
                         <div class="flex items-center gap-3">
                             <input type="file" id="projectImage" accept="image/*" class="flex-1 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100">
                             <button type="button" onclick="uploadProjectImage()" class="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200">上传</button>
-                        </div>
-                        <div id="imagePreview" class="mt-2 hidden">
-                            <img id="previewImg" class="w-full h-32 object-cover rounded-lg">
                         </div>
                     </div>
                 </form>
@@ -351,12 +442,140 @@
         let users = [];
         let projects = [];
         let currentTab = 'users';
+        let authToken = localStorage.getItem('token');
+        let currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
 
         // 页面加载
         document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            
+            // 绑定登录表单
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            document.getElementById('registerForm').addEventListener('submit', handleRegister);
+        });
+
+        // ==================== 认证相关 ====================
+        function checkAuth() {
+            if (authToken && currentUser) {
+                showMainApp();
+            } else {
+                showLoginPage();
+            }
+        }
+
+        function showLoginPage() {
+            document.getElementById('loginPage').classList.remove('hidden');
+            document.getElementById('mainApp').classList.add('hidden');
+        }
+
+        function showMainApp() {
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+            document.getElementById('welcomeUser').textContent = currentUser.username;
             loadUsers();
             loadProjectStats();
-        });
+        }
+
+        function showRegisterForm() {
+            document.getElementById('loginFormContainer').classList.add('hidden');
+            document.getElementById('registerFormContainer').classList.remove('hidden');
+        }
+
+        function showLoginForm() {
+            document.getElementById('registerFormContainer').classList.add('hidden');
+            document.getElementById('loginFormContainer').classList.remove('hidden');
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const result = await res.json();
+                
+                if (result.code === 200) {
+                    authToken = result.data.token;
+                    currentUser = result.data.user;
+                    localStorage.setItem('token', authToken);
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    showToast('登录成功');
+                    showMainApp();
+                } else {
+                    showToast(result.message || '登录失败', 'error');
+                }
+            } catch (e) {
+                showToast('登录失败，请检查网络', 'error');
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const username = document.getElementById('regUsername').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+
+            if (password.length < 6) {
+                showToast('密码至少6位', 'error');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password })
+                });
+                const result = await res.json();
+                
+                if (result.code === 200) {
+                    showToast('注册成功，请登录');
+                    showLoginForm();
+                    document.getElementById('loginUsername').value = username;
+                } else {
+                    showToast(result.message || '注册失败', 'error');
+                }
+            } catch (e) {
+                showToast('注册失败，请检查网络', 'error');
+            }
+        }
+
+        function logout() {
+            authToken = null;
+            currentUser = null;
+            localStorage.removeItem('token');
+            localStorage.removeItem('currentUser');
+            showToast('已退出登录');
+            showLoginPage();
+        }
+
+        // 封装 fetch 请求，自动添加 Authorization
+        async function authFetch(url, options = {}) {
+            const headers = {
+                'Content-Type': 'application/json',
+                ...options.headers
+            };
+            if (authToken) {
+                headers['Authorization'] = `Bearer ${authToken}`;
+            }
+            
+            const response = await fetch(url, { ...options, headers });
+            const result = await response.json();
+            
+            // Token 过期或无效
+            if (result.code === 401) {
+                logout();
+                showToast('登录已过期，请重新登录', 'error');
+                throw new Error('Unauthorized');
+            }
+            
+            return result;
+        }
 
         // 切换标签页
         function switchTab(tab) {
@@ -374,23 +593,25 @@
         // ==================== 用户管理 ====================
         async function loadUsers() {
             try {
-                const res = await fetch('/api/users');
-                const result = await res.json();
+                const result = await authFetch('/api/users');
                 users = result.data || [];
                 renderUsers();
                 updateUserStats();
-            } catch (e) { showToast('加载用户列表失败', 'error'); }
+            } catch (e) { 
+                if (e.message !== 'Unauthorized') showToast('加载用户列表失败', 'error'); 
+            }
         }
 
         async function searchUsers() {
             const keyword = document.getElementById('userSearchInput').value.trim();
             if (!keyword) { loadUsers(); return; }
             try {
-                const res = await fetch(`/api/users/search?keyword=${encodeURIComponent(keyword)}`);
-                const result = await res.json();
+                const result = await authFetch(`/api/users/search?keyword=${encodeURIComponent(keyword)}`);
                 users = result.data || [];
                 renderUsers();
-            } catch (e) { showToast('搜索失败', 'error'); }
+            } catch (e) { 
+                if (e.message !== 'Unauthorized') showToast('搜索失败', 'error'); 
+            }
         }
 
         function renderUsers() {
@@ -465,38 +686,36 @@
                 const url = id ? `/api/users/${id}` : '/api/users';
                 const method = id ? 'PUT' : 'POST';
                 if (id) data.status = parseInt(document.getElementById('status').value);
-                const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-                const result = await res.json();
+                const result = await authFetch(url, { method, body: JSON.stringify(data) });
                 if (result.code === 200) { showToast(id ? '更新成功' : '创建成功'); closeUserModal(); loadUsers(); }
                 else showToast(result.message, 'error');
-            } catch (e) { showToast('操作失败', 'error'); }
+            } catch (e) { if (e.message !== 'Unauthorized') showToast('操作失败', 'error'); }
         }
 
         async function deleteUser(id) {
             if (!confirm('确定删除该用户？')) return;
             try {
-                const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
-                const result = await res.json();
+                const result = await authFetch(`/api/users/${id}`, { method: 'DELETE' });
                 if (result.code === 200) { showToast('删除成功'); loadUsers(); }
                 else showToast(result.message, 'error');
-            } catch (e) { showToast('删除失败', 'error'); }
+            } catch (e) { if (e.message !== 'Unauthorized') showToast('删除失败', 'error'); }
         }
 
         // ==================== 项目管理 ====================
         async function loadProjects() {
             try {
-                const res = await fetch('/api/projects');
-                const result = await res.json();
+                const result = await authFetch('/api/projects');
                 projects = result.data || [];
                 renderProjects();
                 loadProjectStats();
-            } catch (e) { showToast('加载项目列表失败', 'error'); }
+            } catch (e) { 
+                if (e.message !== 'Unauthorized') showToast('加载项目列表失败', 'error'); 
+            }
         }
 
         async function loadProjectStats() {
             try {
-                const res = await fetch('/api/projects/count');
-                const result = await res.json();
+                const result = await authFetch('/api/projects/count');
                 const data = result.data || {};
                 document.getElementById('projectTotalCount').textContent = data.total || 0;
                 document.getElementById('projectInProgress').textContent = data.inProgress || 0;
@@ -507,13 +726,25 @@
 
         async function searchProjects() {
             const keyword = document.getElementById('projectSearchInput').value.trim();
-            if (!keyword) { loadProjects(); return; }
+            const status = document.getElementById('projectStatusFilter').value;
+            
+            let url = '/api/projects/page?pageNumber=0&pageSize=100';
+            if (keyword) url += `&keyword=${encodeURIComponent(keyword)}`;
+            if (status) url += `&status=${status}`;
+            
             try {
-                const res = await fetch(`/api/projects/search?keyword=${encodeURIComponent(keyword)}`);
-                const result = await res.json();
-                projects = result.data || [];
+                const result = await authFetch(url);
+                projects = result.data?.content || [];
                 renderProjects();
-            } catch (e) { showToast('搜索失败', 'error'); }
+            } catch (e) { 
+                if (e.message !== 'Unauthorized') showToast('搜索失败', 'error'); 
+            }
+        }
+
+        function resetProjectSearch() {
+            document.getElementById('projectSearchInput').value = '';
+            document.getElementById('projectStatusFilter').value = '';
+            loadProjects();
         }
 
         function renderProjects() {
@@ -547,7 +778,6 @@
             document.getElementById('projectModalTitle').textContent = '新增项目';
             document.getElementById('projectForm').reset();
             document.getElementById('projectId').value = '';
-            document.getElementById('projectStatusField').classList.add('hidden');
             document.getElementById('imageUploadSection').classList.add('hidden');
             document.getElementById('projectModal').classList.remove('hidden');
         }
@@ -560,10 +790,9 @@
             document.getElementById('projectCode').value = p.projectCode;
             document.getElementById('projectName').value = p.projectName;
             document.getElementById('description').value = p.description || '';
+            document.getElementById('projectStatus').value = p.status;
             document.getElementById('startDate').value = p.startDate ? p.startDate.split('T')[0] : '';
             document.getElementById('endDate').value = p.endDate ? p.endDate.split('T')[0] : '';
-            document.getElementById('projectStatus').value = p.status;
-            document.getElementById('projectStatusField').classList.remove('hidden');
             document.getElementById('imageUploadSection').classList.remove('hidden');
             document.getElementById('projectModal').classList.remove('hidden');
         }
@@ -576,18 +805,17 @@
                 projectCode: document.getElementById('projectCode').value,
                 projectName: document.getElementById('projectName').value,
                 description: document.getElementById('description').value || null,
+                status: parseInt(document.getElementById('projectStatus').value),
                 startDate: document.getElementById('startDate').value ? document.getElementById('startDate').value + 'T00:00:00' : null,
                 endDate: document.getElementById('endDate').value ? document.getElementById('endDate').value + 'T23:59:59' : null
             };
-            if (id) data.status = parseInt(document.getElementById('projectStatus').value);
             try {
                 const url = id ? `/api/projects/${id}` : '/api/projects';
                 const method = id ? 'PUT' : 'POST';
-                const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-                const result = await res.json();
+                const result = await authFetch(url, { method, body: JSON.stringify(data) });
                 if (result.code === 200) { showToast(id ? '更新成功' : '创建成功'); closeProjectModal(); loadProjects(); }
                 else showToast(result.message, 'error');
-            } catch (e) { showToast('操作失败', 'error'); }
+            } catch (e) { if (e.message !== 'Unauthorized') showToast('操作失败', 'error'); }
         }
 
         async function uploadProjectImage() {
@@ -600,9 +828,13 @@
             formData.append('file', fileInput.files[0]);
             
             try {
-                const res = await fetch(`/api/projects/${id}/image`, { method: 'POST', body: formData });
+                const res = await fetch(`/api/projects/${id}/image`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` },
+                    body: formData
+                });
                 const result = await res.json();
-                if (result.code === 200) { showToast('图片上传成功'); loadProjects(); }
+                if (result.code === 200) { showToast('图片上传成功'); loadProjects(); closeProjectModal(); }
                 else showToast(result.message, 'error');
             } catch (e) { showToast('上传失败', 'error'); }
         }
@@ -610,11 +842,10 @@
         async function deleteProject(id) {
             if (!confirm('确定删除该项目？')) return;
             try {
-                const res = await fetch(`/api/projects/${id}`, { method: 'DELETE' });
-                const result = await res.json();
+                const result = await authFetch(`/api/projects/${id}`, { method: 'DELETE' });
                 if (result.code === 200) { showToast('删除成功'); loadProjects(); }
                 else showToast(result.message, 'error');
-            } catch (e) { showToast('删除失败', 'error'); }
+            } catch (e) { if (e.message !== 'Unauthorized') showToast('删除失败', 'error'); }
         }
 
         // ==================== 工具函数 ====================
@@ -628,8 +859,8 @@
         }
 
         // 回车搜索
-        document.getElementById('userSearchInput').addEventListener('keypress', e => { if (e.key === 'Enter') searchUsers(); });
-        document.getElementById('projectSearchInput').addEventListener('keypress', e => { if (e.key === 'Enter') searchProjects(); });
+        document.getElementById('userSearchInput')?.addEventListener('keypress', e => { if (e.key === 'Enter') searchUsers(); });
+        document.getElementById('projectSearchInput')?.addEventListener('keypress', e => { if (e.key === 'Enter') searchProjects(); });
     </script>
 </body>
 </html>

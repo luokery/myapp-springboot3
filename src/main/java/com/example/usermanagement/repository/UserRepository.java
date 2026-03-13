@@ -17,12 +17,12 @@ public interface UserRepository {
     @Select("SELECT * FROM users WHERE username LIKE CONCAT('%', #{keyword}, '%') OR email LIKE CONCAT('%', #{keyword}, '%')")
     List<User> search(String keyword);
     
-    @Insert("INSERT INTO users (username, email, phone, age, role, status, created_at, updated_at) " +
-            "VALUES (#{username}, #{email}, #{phone}, #{age}, #{role}, #{status}, #{createdAt}, #{updatedAt})")
+    @Insert("INSERT INTO users (username, password, email, phone, age, role, status, created_at, updated_at) " +
+            "VALUES (#{username}, #{password}, #{email}, #{phone}, #{age}, #{role}, #{status}, #{createdAt}, #{updatedAt})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     int insert(User user);
     
-    @Update("UPDATE users SET username = #{username}, email = #{email}, phone = #{phone}, " +
+    @Update("UPDATE users SET username = #{username}, password = #{password}, email = #{email}, phone = #{phone}, " +
             "age = #{age}, role = #{role}, status = #{status}, updated_at = #{updatedAt} WHERE id = #{id}")
     int update(User user);
     

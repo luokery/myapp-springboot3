@@ -1,7 +1,12 @@
 server:
   port: 5000
+  # 优雅停机配置
+  shutdown: graceful
 
 spring:
+  # 优雅停机超时时间（默认30秒）
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
   datasource:
     # Druid 数据源配置
     type: com.alibaba.druid.pool.DruidDataSource
@@ -35,8 +40,8 @@ spring:
         exclusions: "*.js,*.gif,*.jpg,*.png,*.css,*.ico,/druid/*"
       #config是为了数据库加密
       filters: stat,wall,slf4j,log4j2,config
-      # spring监控 需要引入spring-boot-starter-aop切面支持
-      aop-patterns: com.example.usermanagement.mapper.*, com.example.usermanagement.service.*, com.example.usermanagement.controller.*
+      # spring监控 - 禁用以避免循环依赖
+      # aop-patterns: com.example.usermanagement.mapper.*, com.example.usermanagement.service.*, com.example.usermanagement.controller.*
       filter:
         stat:
           enabled: true
@@ -75,6 +80,7 @@ mybatis:
 
 # SpringDoc OpenAPI 配置
 springdoc:
+  version: '@springdoc.version@'
   api-docs:
     enabled: true
     path: /v3/api-docs
@@ -84,10 +90,53 @@ springdoc:
     tags-sorter: alpha
     operations-sorter: alpha
   group-configs:
-    - group: '用户管理 API'
-      paths-to-match: '/api/**'
+    - group: "all service"
+      displayName: 全部服务 API
+      paths-to-match: "/**"
+      packages-to-scan:
+        - com.example.usermanagement.controller
+    - group: 'Auth API'
+      displayName: 认证管理 API
+      paths-to-match: '/api/auth/**'
       packages-to-scan: com.example.usermanagement.controller
+    - group: 'Cache API'
+      displayName: 缓存管理 API
+      paths-to-match: '/api/cache/**'
+      packages-to-scan: com.example.usermanagement.controller
+    - group: 'User API'
+      displayName: 用户管理 API
+      paths-to-match: '/api/users/**'
+      packages-to-scan: com.example.usermanagement.controller
+    - group: 'project API'
+      displayName: 项目管理 API
+      paths-to-match: '/api/projects/**'
+      packages-to-scan: com.example.usermanagement.controller
+  # 自定义OpenAPI文档信息
+  openapi:
+    info:
+      title: "测试项目系统API1"  # 文档标题
+      description: | # 文档描述
+        基于 Spring Boot + MyBatis + MapStruct 的API文档示例 RESTful API 文档
+        ## 认证说明
+        - 大部分接口需要 JWT Token 认证
+        - 请先调用 `/api/auth/login` 或 `/api/auth/register` 获取 Token 
+        - 在 Swagger UI 中点击右上角 'Authorize' 按钮，输入 `Bearer <your_token>` 进行认证
+      version: "1.0.0"  # 版本号
+      contact:  # 联系人信息
+        name: "开发团队"
+        email: "dev@example.com"
+      license: 
+        name: MIT License
+        url: https://choosealicense.com/licenses/mit/
+    servers:  # 接口服务器地址(可选，默认使用当前服务地址)
+      - 
+        url: "http://localhost:${server.port:8081}" # https://{domain}.localhost.com:{port}/api/{basePath}
+        description: "开发环境"
+      - 
+        url: https://bac27a6b-3c46-4dc1-a6c1-0f6dd5593bd0.dev.coze.site
+        description: "生产环境"
 
+        
 # Log4j2 日志级别配置
 logging:
   level:
@@ -99,7 +148,14 @@ logging:
 
 # 文件上传配置
 file:
-  upload-dir: c:/tmp/uploads/projects
+  # 基础上传目录
+  upload-dir: /tmp/uploads
+  # 公开文件目录（可直接访问）
+  public-dir: /tmp/uploads/public
+  # 私密文件目录（需要认证）
+  private-dir: /tmp/uploads/private
+  # 项目图片目录（兼容旧配置）
+  project-dir: /tmp/uploads/projects
 
 # Spring 文件上传配置
 spring.servlet.multipart:
@@ -149,3 +205,125 @@ cache:
   caffeine:
     default-expire: 600
     max-size: 1000
+
+# JWT 配置
+jwt:
+  secret: mySecretKeyForJwtTokenGenerationAndValidationMustBeAtLeast256BitsLong
+  expiration: 86400000  # 24小时 (毫秒)
+  header: Authorization
+  prefix: "Bearer "
+
+# Shiro 配置
+shiro:
+  enabled: true
+  web:
+    enabled: true
+  loginUrl: /api/auth/login
+
+# ==================== Spring Boot Actuator 配置 ====================
+management:
+  # 端点配置
+  endpoints:
+    web:
+      # 暴露的端点
+      exposure:
+        include: health,info,metrics,env,loggers,heapdump,threaddump,prometheus
+        # 排除的端点（可选）
+        # exclude: shutdown
+      # 端点基础路径
+      base-path: /actuator
+  # 端点详细配置
+  endpoint:
+    # 健康检查端点
+    health:
+      enabled: true
+      show-details: always  # 显示详细信息（开发环境）
+      show-components: always
+      # 自定义健康检查
+      probes:
+        enabled: true
+      group:
+        liveness:
+          include: livenessState
+        readiness:
+          include: readinessState
+    # 信息端点
+    info:
+      enabled: true
+    # 指标端点
+    metrics:
+      enabled: true
+    # 环境变量端点
+    env:
+      enabled: true
+    # 日志配置端点
+    loggers:
+      enabled: true
+    # 堆转储端点
+    heapdump:
+      enabled: true
+    # 线程转储端点
+    threaddump:
+      enabled: true
+    # Prometheus 指标端点
+    prometheus:
+      enabled: true
+    # 关闭端点（禁用，安全考虑）
+    shutdown:
+      enabled: false
+  # 健康检查配置
+  health:
+    # 数据库健康检查
+    db:
+      enabled: true
+    # 磁盘空间健康检查
+    diskspace:
+      enabled: true
+      threshold: 10MB
+    # 缓存健康检查
+    cache:
+      enabled: true
+    # 自定义健康检查间隔
+    defaults:
+      enabled: true
+  # 指标配置
+  metrics:
+    enabled: true
+    tags:
+      application: ${spring.application.name:user-management}
+    # Web 请求指标
+    web:
+      server:
+        request:
+          autotime:
+            enabled: true
+    # 数据源指标
+    datasource:
+      enabled: true
+    # JVM 指标
+    jvm:
+      enabled: true
+    # 系统指标
+    system:
+      enabled: true
+    # 进程指标
+    process:
+      enabled: true
+  # 信息配置
+  info:
+    # 构建信息
+    build:
+      enabled: true
+    # 环境信息
+    env:
+      enabled: true
+    # Git 信息（需要 git.properties 文件）
+    git:
+      enabled: true
+      mode: full
+    # Java 信息
+    java:
+      enabled: true
+    # 操作系统信息
+    os:
+      enabled: true
