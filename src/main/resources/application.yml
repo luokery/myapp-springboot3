@@ -152,10 +152,13 @@ file:
   upload-dir: /tmp/uploads
   # 公开文件目录（可直接访问）
   public-dir: /tmp/uploads/public
+  public-url: /uploads/public
   # 私密文件目录（需要认证）
   private-dir: /tmp/uploads/private
+  private-url: /uploads/private
   # 项目图片目录（兼容旧配置）
   project-dir: /tmp/uploads/projects
+  project-url: /uploads/projects
 
 # Spring 文件上传配置
 spring.servlet.multipart:
