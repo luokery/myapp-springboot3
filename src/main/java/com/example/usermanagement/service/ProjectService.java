@@ -24,6 +24,7 @@ import java.util.List;
 /**
  * 项目服务
  * 使用 Redis 缓存项目数据
+ * 支持乐观锁和逻辑删除
  */
 @Slf4j
 @Service
@@ -123,7 +124,7 @@ public class ProjectService {
         // 标准化项目编号
         String projectCode = dto.getProjectCode().trim().toUpperCase();
 
-        // 检查项目编号是否已存在
+        // 检查项目编号是否已存在（排除已删除的）
         if (projectRepository.findByProjectCode(projectCode).isPresent()) {
             throw new IllegalArgumentException("项目编号已存在: " + projectCode);
         }
@@ -144,15 +145,26 @@ public class ProjectService {
     }
 
     /**
-     * 更新项目
+     * 更新项目（乐观锁）
      * 清除该项目的缓存和列表缓存
      */
     @Transactional
     @CacheEvict(allEntries = true)
     public ProjectResponseDTO updateProject(Long id, ProjectUpdateDTO dto) {
-        log.debug("更新项目: {}", id);
+        log.debug("更新项目: {}, version: {}", id, dto.getVersion());
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("项目不存在，ID: " + id));
+
+        // 检查乐观锁版本号
+        if (dto.getVersion() == null) {
+            throw new RuntimeException("更新操作必须提供版本号(version)");
+        }
+        if (!project.getVersion().equals(dto.getVersion())) {
+            log.warn("乐观锁冲突: 项目{}已被其他操作修改，当前版本{}，请求版本{}", 
+                    id, project.getVersion(), dto.getVersion());
+            throw new RuntimeException("数据已被其他用户修改，请刷新后重试。" +
+                    "当前版本: " + project.getVersion() + "，请求版本: " + dto.getVersion());
+        }
 
         // 检查项目编号是否被其他项目占用
         if (dto.getProjectCode() != null && !dto.getProjectCode().trim().isEmpty()) {
@@ -173,14 +185,22 @@ public class ProjectService {
         }
 
         projectMapper.updateEntityFromDTO(dto, project);
-        projectRepository.update(project);
+        
+        // 执行更新（带乐观锁检查）
+        int rows = projectRepository.update(project);
+        if (rows == 0) {
+            log.warn("乐观锁更新失败: 项目{}", id);
+            throw new RuntimeException("更新失败，数据可能已被其他用户修改或已删除");
+        }
 
-        log.info("项目更新成功: ID={}", id);
+        // 重新查询获取最新数据
+        project = projectRepository.findById(id).orElseThrow();
+        log.info("项目更新成功: ID={}, 新版本={}", id, project.getVersion());
         return projectMapper.toResponseDTO(project);
     }
 
     /**
-     * 更新项目图片
+     * 更新项目图片（乐观锁）
      * 清除该项目的缓存
      */
     @Transactional
@@ -190,25 +210,58 @@ public class ProjectService {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("项目不存在，ID: " + id));
 
-        project.setImageUrl(imageUrl);
-        project.setUpdatedAt(java.time.LocalDateTime.now());
-        projectRepository.update(project);
+        int rows = projectRepository.updateImage(id, imageUrl, LocalDateTime.now(), project.getVersion());
+        if (rows == 0) {
+            log.warn("项目图片更新失败（乐观锁冲突）: ID={}", id);
+            throw new RuntimeException("更新失败，数据可能已被其他用户修改或已删除");
+        }
+
+        // 重新查询获取最新数据
+        project = projectRepository.findById(id).orElseThrow();
+        log.info("项目图片更新成功: ID={}", id);
         return projectMapper.toResponseDTO(project);
     }
 
     /**
-     * 删除项目
+     * 删除项目（逻辑删除）
      * 清除该项目的缓存和列表缓存
      */
     @Transactional
     @CacheEvict(allEntries = true)
     public void deleteProject(Long id) {
-        log.debug("删除项目: {}", id);
-        if (projectRepository.findById(id).isEmpty()) {
-            throw new RuntimeException("项目不存在，ID: " + id);
+        log.debug("逻辑删除项目: {}", id);
+        Project project = projectRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("项目不存在，ID: " + id));
+        
+        int rows = projectRepository.deleteById(id);
+        if (rows == 0) {
+            throw new RuntimeException("删除失败，项目可能已被删除");
         }
-        projectRepository.deleteById(id);
-        log.info("项目删除成功: ID={}", id);
+        log.info("项目已逻辑删除: ID={}, Code={}", id, project.getProjectCode());
+    }
+
+    /**
+     * 恢复已删除的项目
+     */
+    @Transactional
+    @CacheEvict(allEntries = true)
+    public ProjectResponseDTO restoreProject(Long id) {
+        log.debug("恢复项目: {}", id);
+        Project project = projectRepository.findByIdIncludeDeleted(id)
+                .orElseThrow(() -> new RuntimeException("项目不存在，ID: " + id));
+        
+        if (!Boolean.TRUE.equals(project.getDeleted())) {
+            throw new RuntimeException("项目未被删除，无需恢复");
+        }
+        
+        int rows = projectRepository.restore(id);
+        if (rows == 0) {
+            throw new RuntimeException("恢复失败");
+        }
+        
+        project = projectRepository.findById(id).orElseThrow();
+        log.info("项目已恢复: ID={}, Code={}", id, project.getProjectCode());
+        return projectMapper.toResponseDTO(project);
     }
 
     /**

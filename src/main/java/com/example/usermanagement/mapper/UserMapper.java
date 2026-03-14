@@ -14,6 +14,8 @@ public interface UserMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "password", ignore = true)
     @Mapping(target = "status", constant = "1")
+    @Mapping(target = "version", ignore = true)
+    @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "createdAt", expression = "java(java.time.LocalDateTime.now())")
     @Mapping(target = "updatedAt", expression = "java(java.time.LocalDateTime.now())")
     User toEntity(UserCreateDTO dto);
@@ -24,12 +26,17 @@ public interface UserMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "status", constant = "1")
     @Mapping(target = "role", constant = "user")
+    @Mapping(target = "version", ignore = true)
+    @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "createdAt", expression = "java(java.time.LocalDateTime.now())")
     @Mapping(target = "updatedAt", expression = "java(java.time.LocalDateTime.now())")
     User toEntityFromRegister(RegisterDTO dto);
     
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "password", ignore = true)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "updatedAt", expression = "java(java.time.LocalDateTime.now())")
     void updateEntityFromDTO(UserUpdateDTO dto, @MappingTarget User entity);
     

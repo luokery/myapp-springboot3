@@ -29,6 +29,9 @@ public class UserResponseDTO {
     @Schema(description = "状态：1-启用，0-禁用", example = "1")
     private Integer status;
     
+    @Schema(description = "乐观锁版本号", example = "1")
+    private Integer version;
+    
     @Schema(description = "创建时间", example = "2024-01-01T10:00:00")
     private LocalDateTime createdAt;
     

@@ -20,6 +20,7 @@ import java.util.List;
 /**
  * 用户服务
  * 使用 Redis 缓存用户数据
+ * 支持乐观锁和逻辑删除
  */
 @Slf4j
 @Service
@@ -69,12 +70,12 @@ public class UserService {
     @CacheEvict(key = "'all'")
     public UserResponseDTO createUser(UserCreateDTO dto) {
         log.debug("创建用户: {}", dto.getUsername());
-        // 检查用户名是否已存在
-        if (userRepository.findByUsername(dto.getUsername()).isPresent()) {
+        // 检查用户名是否已存在（包含已删除的）
+        if (userRepository.findByUsernameIncludeDeleted(dto.getUsername()).isPresent()) {
             throw new RuntimeException("用户名已存在: " + dto.getUsername());
         }
-        // 检查邮箱是否已存在
-        if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
+        // 检查邮箱是否已存在（包含已删除的）
+        if (userRepository.findByEmailIncludeDeleted(dto.getEmail()).isPresent()) {
             throw new RuntimeException("邮箱已被注册: " + dto.getEmail());
         }
         
@@ -84,7 +85,7 @@ public class UserService {
     }
     
     /**
-     * 更新用户
+     * 更新用户（乐观锁）
      * 清除该用户的缓存和列表缓存
      */
     @Transactional
@@ -93,13 +94,24 @@ public class UserService {
             @CacheEvict(key = "'all'")
     })
     public UserResponseDTO updateUser(Long id, UserUpdateDTO dto) {
-        log.debug("更新用户: {}", id);
+        log.debug("更新用户: {}, version: {}", id, dto.getVersion());
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("用户不存在，ID: " + id));
         
+        // 检查乐观锁版本号
+        if (dto.getVersion() == null) {
+            throw new RuntimeException("更新操作必须提供版本号(version)");
+        }
+        if (!user.getVersion().equals(dto.getVersion())) {
+            log.warn("乐观锁冲突: 用户{}已被其他操作修改，当前版本{}，请求版本{}", 
+                    id, user.getVersion(), dto.getVersion());
+            throw new RuntimeException("数据已被其他用户修改，请刷新后重试。" +
+                    "当前版本: " + user.getVersion() + "，请求版本: " + dto.getVersion());
+        }
+        
         // 检查用户名是否被其他用户占用
         if (dto.getUsername() != null && !dto.getUsername().equals(user.getUsername())) {
-            userRepository.findByUsername(dto.getUsername())
+            userRepository.findByUsernameIncludeDeleted(dto.getUsername())
                     .ifPresent(u -> {
                         throw new RuntimeException("用户名已存在: " + dto.getUsername());
                     });
@@ -107,19 +119,29 @@ public class UserService {
         
         // 检查邮箱是否被其他用户占用
         if (dto.getEmail() != null && !dto.getEmail().equals(user.getEmail())) {
-            userRepository.findByEmail(dto.getEmail())
+            userRepository.findByEmailIncludeDeleted(dto.getEmail())
                     .ifPresent(u -> {
                         throw new RuntimeException("邮箱已被注册: " + dto.getEmail());
                     });
         }
         
         userMapper.updateEntityFromDTO(dto, user);
-        userRepository.update(user);
+        
+        // 执行更新（带乐观锁检查）
+        int rows = userRepository.update(user);
+        if (rows == 0) {
+            log.warn("乐观锁更新失败: 用户{}", id);
+            throw new RuntimeException("更新失败，数据可能已被其他用户修改或已删除");
+        }
+        
+        // 重新查询获取最新数据
+        user = userRepository.findById(id).orElseThrow();
+        log.info("用户更新成功: ID={}, 新版本={}", id, user.getVersion());
         return userMapper.toResponseDTO(user);
     }
     
     /**
-     * 删除用户
+     * 删除用户（逻辑删除）
      * 清除该用户的缓存和列表缓存
      */
     @Transactional
@@ -128,11 +150,39 @@ public class UserService {
             @CacheEvict(key = "'all'")
     })
     public void deleteUser(Long id) {
-        log.debug("删除用户: {}", id);
-        if (userRepository.findById(id).isEmpty()) {
-            throw new RuntimeException("用户不存在，ID: " + id);
+        log.debug("逻辑删除用户: {}", id);
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("用户不存在，ID: " + id));
+        
+        int rows = userRepository.deleteById(id);
+        if (rows == 0) {
+            throw new RuntimeException("删除失败，用户可能已被删除");
         }
-        userRepository.deleteById(id);
+        log.info("用户已逻辑删除: ID={}, username={}", id, user.getUsername());
+    }
+    
+    /**
+     * 恢复已删除的用户
+     */
+    @Transactional
+    @CacheEvict(allEntries = true)
+    public UserResponseDTO restoreUser(Long id) {
+        log.debug("恢复用户: {}", id);
+        User user = userRepository.findByIdIncludeDeleted(id)
+                .orElseThrow(() -> new RuntimeException("用户不存在，ID: " + id));
+        
+        if (!Boolean.TRUE.equals(user.getDeleted())) {
+            throw new RuntimeException("用户未被删除，无需恢复");
+        }
+        
+        int rows = userRepository.restore(id);
+        if (rows == 0) {
+            throw new RuntimeException("恢复失败");
+        }
+        
+        user = userRepository.findById(id).orElseThrow();
+        log.info("用户已恢复: ID={}, username={}", id, user.getUsername());
+        return userMapper.toResponseDTO(user);
     }
     
     /**

@@ -42,4 +42,7 @@ public class ProjectUpdateDTO {
 
     @Schema(description = "结束日期", example = "2024-12-31T23:59:59")
     private LocalDateTime endDate;
+    
+    @Schema(description = "乐观锁版本号（必须与当前数据库中的版本一致）", example = "1", required = true)
+    private Integer version;
 }

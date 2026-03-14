@@ -28,4 +28,7 @@ public class UserUpdateDTO {
     
     @Schema(description = "状态：1-启用，0-禁用", example = "1", allowableValues = {"0", "1"})
     private Integer status;
+    
+    @Schema(description = "乐观锁版本号（必须与当前数据库中的版本一致）", example = "1", required = true)
+    private Integer version;
 }

@@ -19,12 +19,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -39,10 +37,8 @@ import java.util.UUID;
 public class ProjectController {
 
     private final ProjectService projectService;
-    
-    private String uploadUrl = "projects";
-    
-    @Value("${file.upload-dir:/tmp/uploads}")
+
+    @Value("${file.upload-dir:/tmp/uploads/projects}")
     private String uploadDir;
 
     @Operation(summary = "分页查询项目", description = "支持多条件查询、分页和排序")
@@ -204,7 +200,7 @@ public class ProjectController {
             }
 
             // 创建上传目录
-            Path uploadPath = Paths.get(uploadDir, uploadUrl);
+            Path uploadPath = Paths.get(uploadDir);
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
             }
@@ -218,11 +214,10 @@ public class ProjectController {
 
             // 保存文件
             Path filePath = uploadPath.resolve(newFilename);
-//            file.transferTo(filePath.toFile());
-            file.transferTo( new File(filePath.toUri()) );
-            
+            file.transferTo(filePath.toFile());
+
             // 生成访问URL
-            String imageUrl = MessageFormat.format("/uploads/{0}/{1}", uploadUrl, newFilename);
+            String imageUrl = "/uploads/projects/" + newFilename;
 
             // 更新项目图片URL
             projectService.updateProjectImage(id, imageUrl);

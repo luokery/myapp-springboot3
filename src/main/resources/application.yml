@@ -237,7 +237,7 @@ management:
     # 健康检查端点
     health:
       enabled: true
-      show-details: always  # 显示详细信息（开发环境）
+      show-details: always  # 显示详细信息(开发环境) 生产环境建议改为 when-authorized
       show-components: always
       # 自定义健康检查
       probes:

@@ -12,12 +12,17 @@ public interface ProjectMapper {
     
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "imageUrl", ignore = true)
+    @Mapping(target = "version", ignore = true)
+    @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "status", expression = "java(dto.getStatus() != null ? dto.getStatus() : 1)")
     @Mapping(target = "createdAt", expression = "java(java.time.LocalDateTime.now())")
     @Mapping(target = "updatedAt", expression = "java(java.time.LocalDateTime.now())")
     Project toEntity(ProjectCreateDTO dto);
     
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "updatedAt", expression = "java(java.time.LocalDateTime.now())")
     void updateEntityFromDTO(ProjectUpdateDTO dto, @MappingTarget Project entity);
     

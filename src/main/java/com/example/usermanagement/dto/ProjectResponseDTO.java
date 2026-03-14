@@ -35,6 +35,9 @@ public class ProjectResponseDTO {
     @Schema(description = "结束日期")
     private LocalDateTime endDate;
     
+    @Schema(description = "乐观锁版本号", example = "1")
+    private Integer version;
+    
     @Schema(description = "创建时间")
     private LocalDateTime createdAt;
     

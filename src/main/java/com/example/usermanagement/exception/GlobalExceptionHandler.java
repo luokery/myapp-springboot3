@@ -1,5 +1,8 @@
 package com.example.usermanagement.exception;
 
+import org.apache.shiro.authz.AuthorizationException;
+import org.apache.shiro.authz.UnauthenticatedException;
+import org.apache.shiro.authz.UnauthorizedException;
 import com.example.usermanagement.controller.Result;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -30,6 +33,36 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    /**
+     * 处理 Shiro 未认证异常
+     */
+    @ExceptionHandler(UnauthenticatedException.class)
+    public ResponseEntity<Result<Void>> handleUnauthenticatedException(UnauthenticatedException e) {
+        log.warn("用户未认证: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Result.error(401, "请先登录"));
+    }
+
+    /**
+     * 处理 Shiro 权限不足异常
+     */
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<Result<Void>> handleUnauthorizedException(UnauthorizedException e) {
+        log.warn("用户权限不足: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Result.error(403, "无权限访问，仅管理员可操作"));
+    }
+
+    /**
+     * 处理 Shiro 授权异常
+     */
+    @ExceptionHandler(AuthorizationException.class)
+    public ResponseEntity<Result<Void>> handleAuthorizationException(AuthorizationException e) {
+        log.warn("授权异常: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Result.error(403, "无权限访问"));
+    }
+    
     /**
      * 处理参数校验异常（@Valid @RequestBody）
      */
